@@ -19,13 +19,13 @@ const AuthButton = () => {
   if (user) {
     return (
       <div className="flex items-center ml-4 space-x-2">
-        <Link to="/admin">
+        <Link to="/dashboard">
           <Button 
             variant="ghost"
             className="text-white hover:text-green-400 hover:bg-transparent"
           >
             <User size={18} className="mr-2" />
-            Admin
+            Dashboard
           </Button>
         </Link>
         <Button 

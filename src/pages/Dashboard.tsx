@@ -7,10 +7,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Input } from '@/components/ui/input';
 import { toast } from '@/hooks/use-toast';
 
-const Admin = () => {
+const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [pricingPlans, setPricingPlans] = useState<any[]>([]);
   const navigate = useNavigate();
   
@@ -25,23 +24,6 @@ const Admin = () => {
         }
         
         setUser(data.session.user);
-        
-        // For this demo, we'll consider the first registered user as admin
-        // In a real app, you would check a specific admin role in the database
-        const { count } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true });
-          
-        setIsAdmin(count === 1);
-        
-        if (count !== 1) {
-          navigate('/');
-          toast({
-            title: "Access Denied",
-            description: "You don't have admin privileges",
-            variant: "destructive",
-          });
-        }
         
         // Fetch pricing plans
         const { data: plans, error } = await supabase
@@ -196,16 +178,12 @@ const Admin = () => {
       </div>
     );
   }
-  
-  if (!isAdmin) {
-    return null; // Navigation already handled in useEffect
-  }
 
   return (
     <div className="min-h-screen pt-28 pb-12 px-6 md:px-12">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+          <h1 className="text-3xl font-bold text-white">Dashboard</h1>
           <Button 
             onClick={handleSignOut} 
             variant="outline"
@@ -390,4 +368,4 @@ const Admin = () => {
   );
 };
 
-export default Admin;
+export default Dashboard;
