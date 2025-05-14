@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import AuthButton from '@/components/AuthButton';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -68,15 +69,19 @@ const Navbar = () => {
               {link.name}
             </NavLink>
           ))}
+          <AuthButton />
         </div>
 
         {/* Mobile Navigation Toggle */}
-        <button
-          className="md:hidden text-white hover:text-green-400 transition-colors"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="md:hidden flex items-center">
+          <AuthButton />
+          <button
+            className="ml-4 text-white hover:text-green-400 transition-colors"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Navigation Menu */}
