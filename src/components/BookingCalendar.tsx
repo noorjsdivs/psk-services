@@ -14,6 +14,9 @@ import {
 import { CalendarClock, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 const availableTimeSlots = [
   '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
@@ -38,13 +41,16 @@ const BookingCalendar = () => {
     location: '',
     details: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!date || !timeSlot || !eventType) {
@@ -56,30 +62,67 @@ const BookingCalendar = () => {
       return;
     }
 
-    // Here you would normally send the data to your backend
-    console.log({
-      date: date ? format(date, 'yyyy-MM-dd') : '',
-      timeSlot,
-      eventType,
-      ...formData
-    });
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to book an appointment",
+        variant: "destructive"
+      });
+      navigate('/auth', { state: { returnUrl: '/booking' } });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Format date for database (YYYY-MM-DD)
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      
+      // Save appointment to Supabase
+      const { error } = await supabase.from('appointments').insert({
+        user_id: user.id,
+        date: formattedDate,
+        time_slot: timeSlot,
+        event_type: eventType,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        location: formData.location,
+        details: formData.details || null
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Booking request submitted!",
+        description: `We'll contact you soon to confirm your ${eventType} on ${format(date, 'MMMM dd, yyyy')} at ${timeSlot}.`,
+      });
 
-    toast({
-      title: "Booking request submitted!",
-      description: `We'll contact you soon to confirm your ${eventType} on ${format(date, 'MMMM dd, yyyy')} at ${timeSlot}.`,
-    });
-
-    // Reset form
-    setDate(undefined);
-    setTimeSlot('');
-    setEventType('');
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      location: '',
-      details: ''
-    });
+      // Reset form
+      setDate(undefined);
+      setTimeSlot('');
+      setEventType('');
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        location: '',
+        details: ''
+      });
+      
+      // Navigate to dashboard to see the booking
+      navigate('/dashboard');
+      
+    } catch (error) {
+      console.error('Error saving appointment:', error);
+      toast({
+        title: "Something went wrong",
+        description: "Unable to submit your booking. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -201,8 +244,9 @@ const BookingCalendar = () => {
           <Button 
             type="submit" 
             className="w-full bg-psyco-green-DEFAULT hover:bg-psyco-green-dark transition-colors"
+            disabled={isSubmitting}
           >
-            Request Booking
+            {isSubmitting ? 'Submitting...' : 'Request Booking'}
           </Button>
         </form>
       </div>
