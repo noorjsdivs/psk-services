@@ -1,46 +1,58 @@
-
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { toast } from '@/hooks/use-toast';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "@/hooks/use-toast";
 
 const loginSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email address' }),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" }),
 });
 
-const signupSchema = loginSchema.extend({
-  confirmPassword: z.string().min(6, { message: 'Password must be at least 6 characters' }),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+const signupSchema = loginSchema
+  .extend({
+    confirmPassword: z
+      .string()
+      .min(6, { message: "Password must be at least 6 characters" }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 const Auth = () => {
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [mode, setMode] = useState<"login" | "signup">("login");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
   });
 
   const signupForm = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      email: '',
-      password: '',
-      confirmPassword: '',
+      email: "",
+      password: "",
+      // confirmPassword: "",
     },
   });
 
@@ -48,9 +60,9 @@ const Auth = () => {
     // Check if user is already logged in
     const checkUser = async () => {
       const { data } = await supabase.auth.getSession();
-      if (data.session) navigate('/');
+      if (data.session) navigate("/");
     };
-    
+
     checkUser();
   }, [navigate]);
 
@@ -63,13 +75,13 @@ const Auth = () => {
       });
 
       if (error) throw error;
-      
+
       toast({
         title: "Login successful",
         description: "Welcome back!",
       });
-      
-      navigate('/');
+
+      navigate("/");
     } catch (error) {
       const err = error as { message: string };
       toast({
@@ -91,13 +103,13 @@ const Auth = () => {
       });
 
       if (error) throw error;
-      
+
       toast({
         title: "Registration successful",
         description: "Please check your email to verify your account.",
       });
-      
-      setMode('login');
+
+      setMode("login");
     } catch (error) {
       const err = error as { message: string };
       toast({
@@ -115,18 +127,21 @@ const Auth = () => {
       <div className="w-full max-w-md glassmorphism p-8 rounded-xl shadow-xl">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-white mb-2">
-            {mode === 'login' ? 'Welcome Back' : 'Create Account'}
+            {mode === "login" ? "Welcome Back" : "Create Account"}
           </h2>
           <p className="text-gray-400">
-            {mode === 'login' 
-              ? 'Sign in to your account to continue' 
-              : 'Fill out the form to create a new account'}
+            {mode === "login"
+              ? "Sign in to your account to continue"
+              : "Fill out the form to create a new account"}
           </p>
         </div>
 
-        {mode === 'login' ? (
+        {mode === "login" ? (
           <Form {...loginForm}>
-            <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-6">
+            <form
+              onSubmit={loginForm.handleSubmit(handleLogin)}
+              className="space-y-6"
+            >
               <FormField
                 control={loginForm.control}
                 name="email"
@@ -134,9 +149,9 @@ const Auth = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="your.email@example.com" 
-                        {...field} 
+                      <Input
+                        placeholder="your.email@example.com"
+                        {...field}
                         type="email"
                         disabled={loading}
                       />
@@ -153,9 +168,9 @@ const Auth = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="******" 
-                        {...field} 
+                      <Input
+                        placeholder="******"
+                        {...field}
                         type="password"
                         disabled={loading}
                       />
@@ -165,21 +180,21 @@ const Auth = () => {
                 )}
               />
 
-              <Button 
-                type="submit" 
-                className="w-full bg-psyco-green-DEFAULT hover:bg-psyco-green-dark"
+              <Button
+                type="submit"
+                className="w-full bg-psyco-green-DEFAULT border border-input hover:bg-psyco-green-dark"
                 disabled={loading}
               >
-                {loading ? 'Logging in...' : 'Sign In'}
+                {loading ? "Logging in..." : "Sign In"}
               </Button>
-              
+
               <div className="text-center mt-4">
                 <p className="text-sm text-gray-400">
-                  Don't have an account?{' '}
+                  Don't have an account?{" "}
                   <button
                     type="button"
                     className="text-psyco-green-DEFAULT hover:text-psyco-green-light"
-                    onClick={() => setMode('signup')}
+                    onClick={() => setMode("signup")}
                     disabled={loading}
                   >
                     Sign up
@@ -190,7 +205,10 @@ const Auth = () => {
           </Form>
         ) : (
           <Form {...signupForm}>
-            <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-6">
+            <form
+              onSubmit={signupForm.handleSubmit(handleSignup)}
+              className="space-y-6"
+            >
               <FormField
                 control={signupForm.control}
                 name="email"
@@ -198,10 +216,10 @@ const Auth = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="your.email@example.com" 
-                        {...field} 
+                      <Input
                         type="email"
+                        placeholder="your.email@example.com"
+                        {...field}
                         disabled={loading}
                       />
                     </FormControl>
@@ -217,10 +235,10 @@ const Auth = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="******" 
-                        {...field} 
+                      <Input
                         type="password"
+                        placeholder="******"
+                        {...field}
                         disabled={loading}
                       />
                     </FormControl>
@@ -236,9 +254,9 @@ const Auth = () => {
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="******" 
-                        {...field} 
+                      <Input
+                        placeholder="******"
+                        {...field}
                         type="password"
                         disabled={loading}
                       />
@@ -248,21 +266,21 @@ const Auth = () => {
                 )}
               />
 
-              <Button 
-                type="submit" 
-                className="w-full bg-psyco-green-DEFAULT hover:bg-psyco-green-dark"
+              <Button
+                type="submit"
+                className="w-full bg-psyco-green-DEFAULT border border-input hover:bg-psyco-green-dark"
                 disabled={loading}
               >
-                {loading ? 'Creating Account...' : 'Sign Up'}
+                {loading ? "Creating Account..." : "Sign Up"}
               </Button>
-              
+
               <div className="text-center mt-4">
                 <p className="text-sm text-gray-400">
-                  Already have an account?{' '}
+                  Already have an account?{" "}
                   <button
                     type="button"
-                    className="text-psyco-green-DEFAULT hover:text-psyco-green-light"
-                    onClick={() => setMode('login')}
+                    className="text-psyco-green-DEFAULT  hover:text-psyco-green-light"
+                    onClick={() => setMode("login")}
                     disabled={loading}
                   >
                     Sign in
