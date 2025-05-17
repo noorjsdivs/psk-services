@@ -48,7 +48,11 @@ const Dashboard = () => {
           throw error;
         }
         
-        setAppointments(data || []);
+        // Cast the data to ensure types match properly
+        setAppointments(data?.map(item => ({
+          ...item,
+          status: (item.status as 'pending' | 'confirmed' | 'cancelled')
+        })) || []);
       } catch (error) {
         console.error('Error fetching appointments:', error);
         toast({
